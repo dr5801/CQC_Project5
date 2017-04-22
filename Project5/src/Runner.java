@@ -1,6 +1,7 @@
 import java.io.FileNotFoundException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
@@ -27,43 +28,55 @@ public class Runner
 	 */
 	private static void exampleWithWeakHashMap() 
 	{
-		WeakHashMap<String, Integer> weakHashMap = new WeakHashMap<String, Integer>();
+		WeakHashMap<WeakReference<String>, WeakReference<Integer>> weakHashMap = new WeakHashMap<WeakReference<String>, WeakReference<Integer>>();
 		initializeWeakHashMap(weakHashMap);
-		
-		/* clear the listOfStrings */
-		for(String string : listOfStrings)
-		{
-			string = null;
-		}
 		
 		System.out.println("\nPart 2: Using WeakHashMap:");
 		System.out.println("Values in WeakHashMap before garbage collection:");
 		printValues(weakHashMap);
+		
+		System.gc();
+		
+		System.out.println("\nGarbage collection occurred, WeakHashMap keys : ");
+		for(String numberString : listOfStrings)
+		{
+			String key = null;
+			
+			/* if the key exists, set the string key to the key */
+			if(weakHashMap.containsKey(numberString))
+			{
+				key = numberString;
+			}
+			
+			System.out.print("(" + key + "," + weakHashMap.get(key) + ") ");
+		}
 	}
 
 	/**
 	 * prints the values of the weak hashmap 
 	 * @param weakHashMap
 	 */
-	private static void printValues(WeakHashMap<String, Integer> weakHashMap) 
+	private static void printValues(WeakHashMap<WeakReference<String>, WeakReference<Integer>> weakHashMap) 
 	{
-		for(String key : weakHashMap.keySet())
+		for(WeakReference<String> key : weakHashMap.keySet())
 		{
-			System.out.print("(" + key + "," + weakHashMap.get(key) + ") ");
+			System.out.print("(" + key.get() + "," + weakHashMap.get(key).get() + ") ");
 		}
-		
 	}
 
 	/**
 	 * initializes the weakHashMap by filling it with the strings of numbers and the number associated with it
 	 * @param weakHashMap
 	 */
-	private static void initializeWeakHashMap(WeakHashMap<String, Integer> weakHashMap) 
+	private static void initializeWeakHashMap(WeakHashMap<WeakReference<String>, WeakReference<Integer>> weakHashMap) 
 	{
 		int number = 1;
 		for(String numberString : listOfStrings)
 		{
-			weakHashMap.put(numberString, number++);
+			WeakReference<Integer> weakInteger = new WeakReference<Integer>(new Integer(number));
+			WeakReference<String> weakString = new WeakReference<String>(new String(numberString));
+			weakHashMap.put(weakString, weakInteger);
+			number++;
 		}
 	}
 
